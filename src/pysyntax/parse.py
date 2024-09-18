@@ -36,3 +36,20 @@ def function_call(code: str) -> tuple[str, dict[str, _Any]]:
     visitor = CallVisitor()
     visitor.visit(tree)
     return visitor.func_name, visitor.args
+
+
+def docstring(code: str) -> str | None:
+    """Extract docstring from a Python module, class, or function content.
+
+    Parameters
+    ----------
+    code : str
+        The code to parse.
+
+    Returns
+    -------
+    str or None
+        The module docstring or None if not found.
+    """
+    tree = _ast.parse(code)
+    return _ast.get_docstring(tree, clean=False)
