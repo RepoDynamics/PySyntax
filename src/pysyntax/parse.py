@@ -53,3 +53,27 @@ def docstring(code: str) -> str | None:
     """
     tree = _ast.parse(code)
     return _ast.get_docstring(tree, clean=False)
+
+
+def imports(code: str) -> list[str]:
+    """Extract import statements from a Python module content.
+
+    Parameters
+    ----------
+    code
+        The code to parse.
+
+    Returns
+    -------
+    A list of imported module names.
+    """
+    tree = _ast.parse(code, filename='<string>')
+    imported_modules = []
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.Import):
+            for alias in node.names:
+                imported_modules.append(alias.name)
+        elif isinstance(node, _ast.ImportFrom):
+            if node.module:  # Sometimes this can be None (for relative imports)
+                imported_modules.append(node.module)
+    return imported_modules
