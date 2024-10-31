@@ -77,3 +77,40 @@ def imports(code: str) -> list[str]:
             if node.module:  # Sometimes this can be None (for relative imports)
                 imported_modules.append(node.module)
     return imported_modules
+
+
+def object_definition_lines(code: str, object_name: str) -> tuple[int, int | None] | None:
+    """Get the line numbers of an object definition in the source file.
+
+    Parameters
+    ----------
+    filepath
+        Path to the source file.
+    object_name
+        Name of the object to find in the source file.
+
+    Returns
+    -------
+    Start and end line numbers of the object definition.
+    End line number is `None` if the object definition is a single line.
+    If the object is not found, `None` is returned.
+    """
+    tree = _ast.parse(code, filename="<string>")
+    for node in _ast.walk(tree):
+        # Check for class or function definitions
+        if isinstance(
+            node,
+            (_ast.ClassDef, _ast.FunctionDef, _ast.AsyncFunctionDef)
+        ) and node.name == object_name:
+            return node.lineno, getattr(node, 'end_lineno', None)
+        # Check for variable assignments (without type annotations)
+        if isinstance(node, _ast.Assign):
+            for target in node.targets:
+                if isinstance(target, _ast.Name) and target.id == object_name:
+                    return node.lineno, getattr(node, 'end_lineno', None)
+        # Check for variable assignments (with type annotations)
+        if isinstance(node, _ast.AnnAssign):
+            target = node.target
+            if isinstance(target, _ast.Name) and target.id == object_name:
+                return node.lineno, getattr(node, 'end_lineno', None)
+    return
