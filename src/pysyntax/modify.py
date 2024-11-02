@@ -3,13 +3,13 @@ import re as _re
 import pysyntax as _pysyntax
 
 
-def rename_imports(module_content: str, mapping: dict[str, str]) -> str:
+def imports(code: str, mapping: dict[str, str]) -> str:
     """
     Rename imports in a module.
 
     Parameters
     ----------
-    module_content : str
+    code : str
         The content of the Python module as a string.
     mapping : dict[str, str]
         A dictionary mapping the old import names to the new import names.
@@ -19,7 +19,7 @@ def rename_imports(module_content: str, mapping: dict[str, str]) -> str:
     new_module_content : str
         The updated module content as a string with the old names replaced by the new names.
     """
-    updated_module_content = module_content
+    updated_module_content = code
     for old_name, new_name in mapping.items():
         # Regular expression patterns to match the old name in import statements
         patterns = [
@@ -36,23 +36,23 @@ def rename_imports(module_content: str, mapping: dict[str, str]) -> str:
     return updated_module_content
 
 
-def update_docstring(file_content, new_docstring, quotes: str = '"""'):
+def docstring(code: str, new_docstring, quotes: str = '"""'):
     """
     Replaces the existing module docstring with new_docstring, or adds it if none exists.
 
     Parameters:
-        file_content (str): The content of the Python file as a string.
+        code (str): The content of the Python file as a string.
         new_docstring (str): The new docstring to replace or add.
 
     Returns:
         str: The modified file content.
     """
-    existing_docstring = _pysyntax.parse.docstring(file_content)
+    existing_docstring = _pysyntax.parse.docstring(code)
     if existing_docstring is not None:
         # Replace the existing docstring with the new one
-        return file_content.replace(existing_docstring, new_docstring, 1)
+        return code.replace(existing_docstring, new_docstring, 1)
 
-    lines = file_content.splitlines()
+    lines = code.splitlines()
     insert_pos = 0
     for i, line in enumerate(lines):
         stripped = line.strip()
@@ -64,3 +64,30 @@ def update_docstring(file_content, new_docstring, quotes: str = '"""'):
     whitespace_after = "\n" if insert_pos != len(lines) and lines[insert_pos].strip() else "\n"
     lines.insert(insert_pos, f'{whitespace_before}{quotes}{new_docstring}{quotes}{whitespace_after}')
     return '\n'.join(lines)
+
+
+def header_comments(code: str, new_comments: str, empty_lines: int = 1):
+    """Replace or add header comments to a Python module content.
+
+    Parameters
+    ----------
+    code
+        Python module content as a string.
+    new_comments
+        New header comments to replace or add.
+    empty_lines
+        Number of empty lines to add after the header comments.
+
+    Returns
+    -------
+    The modified module content.
+    """
+    existing_comments = _pysyntax.parse.header_comments(code)
+    if existing_comments:
+        # Replace the existing header comments with the new ones
+        return code.replace(
+            "\n".join(existing_comments),
+            f"{new_comments.rstrip()}{"\n" * empty_lines}",
+            1
+        )
+    return f"{new_comments.rstrip()}{"\n" * (empty_lines + 1)}{code}"

@@ -114,3 +114,27 @@ def object_definition_lines(code: str, object_name: str) -> tuple[int, int | Non
             if isinstance(target, _ast.Name) and target.id == object_name:
                 return node.lineno, getattr(node, 'end_lineno', None)
     return
+
+
+def header_comments(code: str) -> list[str]:
+    """Extract header comments from a Python module content.
+
+    Parameters
+    ----------
+    code
+        The code to parse.
+
+    Returns
+    -------
+    str
+        The header comments from the module content.
+    """
+    lines = code.splitlines()
+    header_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('#') or stripped == '':
+            header_lines.append(line)
+        else:
+            break
+    return header_lines

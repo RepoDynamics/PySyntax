@@ -16,6 +16,15 @@ namespaces = true
 
 # ----------------------------------------- Project Metadata -------------------------------------
 [project]
-version = "0.0.0.dev4"
+version = "0.0.0.dev5"
 name = "PySyntax"
 requires-python = ">=3.10"
+
+
+
+
+
+
+
+[tool.pytest.ini_options]
+python_functions = "test_* *_test *_tests"
